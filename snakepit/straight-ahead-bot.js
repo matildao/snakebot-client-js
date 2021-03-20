@@ -3,6 +3,8 @@ const {isCoordinateOutOfBounds} = require("../domain/mapUtils");
 
 let log = null; // Injected logger
 
+const useLevel2 = false
+
 function onMapUpdated(mapState, myUserId) {
   const map = mapState.getMap();
   let directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
@@ -14,6 +16,20 @@ function onMapUpdated(mapState, myUserId) {
   snakeBrainDump.myCoords = myCoords;
 
   // 2. Do some nifty planning...
+  let direction = null
+  if (useLevel2) {
+    // TODO implement
+  } else {
+    direction = getDirectionForLevel1(directions, myCoords, map);
+  }
+
+  return {
+    direction: direction,
+    debugData: snakeBrainDump
+  }
+}
+
+function getDirectionForLevel1(directions, myCoords, map) {
   const directionCount = {}
   for (let dir of directions) {
     let count = 0
@@ -40,10 +56,7 @@ function onMapUpdated(mapState, myUserId) {
 
   // 3. Then shake that snake!
   log("choosing " + dirWeCanGoFurthestIn)
-  return {
-    direction: dirWeCanGoFurthestIn,
-    debugData: snakeBrainDump
-  }
+  return dirWeCanGoFurthestIn;
 }
 
 function oneStepInDirection(myCoords, dir) {
