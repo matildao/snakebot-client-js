@@ -3,7 +3,7 @@ const {isCoordinateOutOfBounds} = require("../domain/mapUtils");
 
 let log = null; // Injected logger
 
-const useLevel2 = false
+const useLevel2 = true
 
 function onMapUpdated(mapState, myUserId) {
   const map = mapState.getMap();
@@ -18,7 +18,7 @@ function onMapUpdated(mapState, myUserId) {
   // 2. Do some nifty planning...
   let direction = null
   if (useLevel2) {
-    // TODO implement
+    direction = getDirectionForLevel2(directions, myCoords, map);
   } else {
     direction = getDirectionForLevel1(directions, myCoords, map);
   }
@@ -27,6 +27,55 @@ function onMapUpdated(mapState, myUserId) {
     direction: direction,
     debugData: snakeBrainDump
   }
+}
+
+function getDirectionForLevel2(directions, myCoords, map) {
+  let ourOptions = []
+  for (let x = 0; x < map.getWidth(); x++) {
+    for (let y = 0; y < map.getHeight(); y++) {
+      let checkCoords = {x: x, y: y};
+      const tile = MapUtils.getTileAt(checkCoords, map)
+      const available = tile.content === '' || tile.content === 'food';
+      if (available) {
+        const distance = MapUtils.getManhattanDistance(myCoords, checkCoords)
+        // const key = checkCoords.x + "*" + checkCoords.y
+        ourOptions.push({
+          x: checkCoords.x,
+          y: checkCoords.y,
+          distance
+        })
+      }
+    }
+  }
+  // log(JSON.stringify(ourOptions))
+
+  ourOptions.sort((a, b) => a.distance > b.distance ? a : b)
+  log("index 0: " + ourOptions[0].distance)
+  log("index 100: " + ourOptions[100].distance)
+
+  for (let option of ourOptions) {
+    const directionOptions = getDirectionsForThisOption(myCoords, option)
+    //från där jag gå enligt delta (från enda directionen) till option.x/y är
+    // nådd byt då till andra directionen och fortsätt till option x OCH y är nådd  (returnera first direction)
+    //om det någon gång blir ett obstacle -> testa andra ordningen på directions
+    //om ingen kombo funkar -> gå vidare i loopen
+  }
+  return 'DOWN' // getDirectionForLevel1(directions, myCoords, map)
+}
+
+function getDirectionsForThisOption(myCoords, option) {
+  const result = []
+  if (myCoords.x < option.x) {
+    result.push('RIGHT')
+  } else {
+    result.push('LEFT')
+  }
+  if (myCoords.y < option.y) {
+    result.push('DOWN')
+  } else {
+    result.push('UP')
+  }
+  return result
 }
 
 function getDirectionForLevel1(directions, myCoords, map) {
