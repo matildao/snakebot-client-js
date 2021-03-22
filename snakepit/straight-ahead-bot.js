@@ -39,7 +39,6 @@ function getDirectionForLevel2(directions, myCoords, map) {
       const available = tile.content === '' || tile.content === 'food';
       if (available) {
         const distance = MapUtils.getManhattanDistance(myCoords, checkCoords)
-        // const key = checkCoords.x + "*" + checkCoords.y
         ourOptions.push({
           x: checkCoords.x,
           y: checkCoords.y,
