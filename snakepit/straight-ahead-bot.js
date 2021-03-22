@@ -3,7 +3,7 @@ const {isCoordinateOutOfBounds} = require("../domain/mapUtils");
 
 let log = null; // Injected logger
 
-const useLevel2 = true
+const useLevel2 = false
 
 function onMapUpdated(mapState, myUserId) {
   const map = mapState.getMap();
@@ -23,6 +23,7 @@ function onMapUpdated(mapState, myUserId) {
     direction = getDirectionForLevel1(directions, myCoords, map);
   }
 
+  log("selecting direction: " + direction)
   return {
     direction: direction,
     debugData: snakeBrainDump
@@ -47,20 +48,87 @@ function getDirectionForLevel2(directions, myCoords, map) {
       }
     }
   }
-  // log(JSON.stringify(ourOptions))
 
-  ourOptions.sort((a, b) => a.distance > b.distance ? a : b)
-  log("index 0: " + ourOptions[0].distance)
-  log("index 100: " + ourOptions[100].distance)
+  ourOptions = ourOptions.sort((a, b) => b.distance -a.distance)
 
   for (let option of ourOptions) {
     const directionOptions = getDirectionsForThisOption(myCoords, option)
-    //från där jag gå enligt delta (från enda directionen) till option.x/y är
-    // nådd byt då till andra directionen och fortsätt till option x OCH y är nådd  (returnera first direction)
-    //om det någon gång blir ett obstacle -> testa andra ordningen på directions
-    //om ingen kombo funkar -> gå vidare i loopen
+    const directionA = directionOptions[0]
+    const directionB = directionOptions[1]
+
+    //try direction A then direction B
+    if (tryDirectionCombo(map, myCoords, option, directionA, directionB)) {
+      return directionA
+    }
+
+    //if direction A then direction B failed, attempt direction B then direction A
+    if (tryDirectionCombo(map, myCoords, option, directionB, directionA)) {
+      return directionB
+    }
+
+    //if neither a->b or b->a worked, continue with next option
   }
-  return 'DOWN' // getDirectionForLevel1(directions, myCoords, map)
+  return 'DOWN' // TODO or use getDirectionForLevel1(directions, myCoords, map)
+}
+
+function tryDirectionCombo(map, startCoords, option, firstDirection,
+    secondDirection) {
+  let checkCoords = startCoords
+
+  // MOVE ALL THE WAY IN FIRST DIRECTION
+  // prerequisite: am i walking towards x or y?
+  let checkingX = firstDirection === 'LEFT' || firstDirection === 'RIGHT'
+
+  //loop to try to move all the way to option in first direction
+  while (true) {
+    //move one tile in direction of x/y
+    if (MapUtils.canSnakeMoveInDirection(firstDirection, checkCoords, map)) {
+      // move
+      checkCoords = oneStepInDirection(checkCoords, firstDirection)
+    } else {
+      // this combo did not work
+      return false
+    }
+
+    //can i stand on this tile? if no: return false
+    if (isCoordinateOutOfBounds(checkCoords, map)) {
+      return false;
+    }
+
+    // have i moved all the way this direction? if so check next direction
+    if ((checkingX && checkCoords.x === option.x)
+        || !checkingX && checkCoords.y === option.y) {
+      break;
+    }
+  }
+
+  // MOVE ALL THE WAY IN SECOND DIRECTION
+
+  //prerequisite: am i walking towards x or y?
+  checkingX = secondDirection === 'UP' || secondDirection === 'DOWN'
+
+  //loop to try to move all the way to option in second direction
+  while (true) {
+    //move one tile in direction of x/y
+    if (MapUtils.canSnakeMoveInDirection(secondDirection, checkCoords, map)) {
+      // move
+      checkCoords = oneStepInDirection(checkCoords, secondDirection)
+    } else {
+      // this combo did not work
+      return false
+    }
+
+    //can i stand on this tile? if no: return false
+    if (isCoordinateOutOfBounds(checkCoords, map)) {
+      return false;
+    }
+
+    // have i moved all the way this direction? if so i've reached the option! return success
+    if ((checkingX && checkCoords.x === option.x)
+        || !checkingX && checkCoords.y === option.y) {
+      return true;
+    }
+  }
 }
 
 function getDirectionsForThisOption(myCoords, option) {
@@ -83,6 +151,7 @@ function getDirectionForLevel1(directions, myCoords, map) {
   for (let dir of directions) {
     let count = 0
     let checkCoords = myCoords
+    //isCoordinateOutOfBounds should be checked on next tile not current?
     while (!isCoordinateOutOfBounds(checkCoords, map)
     && MapUtils.canSnakeMoveInDirection(dir, checkCoords, map)) {
       count++
