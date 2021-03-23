@@ -7,7 +7,7 @@ let log = null; // Injected logger
 /**
  * INFO!!!! SET THIS FLAG TO SWITCH BETWEEN LEVEL 1 AND 2
  */
-const useLevel2 = true;
+const useLevel2 = false;
 
 const LEFT = 'LEFT';
 const RIGHT = 'RIGHT';
