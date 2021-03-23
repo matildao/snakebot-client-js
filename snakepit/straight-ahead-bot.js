@@ -150,11 +150,12 @@ function getDirectionForLevel1(directions, myCoords, map) {
   for (let dir of directions) {
     let count = 0
     let checkCoords = myCoords
-    //isCoordinateOutOfBounds should be checked on next tile not current?
-    while (!isCoordinateOutOfBounds(checkCoords, map)
+    let nextCoords = oneStepInDirection(checkCoords, dir)
+    while (!isCoordinateOutOfBounds(nextCoords, map)
     && MapUtils.canSnakeMoveInDirection(dir, checkCoords, map)) {
       count++
-      checkCoords = oneStepInDirection(checkCoords, dir)
+      checkCoords = nextCoords
+      nextCoords = oneStepInDirection(checkCoords, dir)
     }
     directionCount[dir] = count
   }
