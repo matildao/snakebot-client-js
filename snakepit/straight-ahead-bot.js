@@ -2,7 +2,9 @@ const MapUtils = require('../domain/mapUtils.js');
 const {isCoordinateOutOfBounds} = require("../domain/mapUtils");
 
 let log = null; // Injected logger
-
+/**
+ * INFO!!!! SET THIS FLAG TO SWITCH BETWEEN LEVEL 1 AND 2
+ */
 const useLevel2 = false
 
 function onMapUpdated(mapState, myUserId) {
