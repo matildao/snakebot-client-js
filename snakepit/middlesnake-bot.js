@@ -4,6 +4,7 @@
 const MapUtils = require("../domain/mapUtils.js");
 
 let log = null; // Injected logger
+let level2 = false; //Set to true for level2
 
 //Returns directions where tile is not blocked
 function movableDirections(map, myCoords) {
@@ -45,9 +46,15 @@ function findClosestDirectionToMiddle(directions, myCoords, middle, map) {
 		let toKeepFromDistance = Math.abs(distance - keepFromMiddleDistance);
 		const additionalDirections = movableDirections(map, directionCoordinates);
 
-		// Uncomment for step 2 & comment current if
-		// if (toKeepFromDistance < shortestDiff && additionalDirections.length > 0) {
-		if (toKeepFromDistance < shortestDiff) {
+		if (
+			toKeepFromDistance < shortestDiff &&
+			additionalDirections.length > 0 &&
+			level2
+		) {
+			closest = distance;
+			closestDirection = c;
+			shortestDiff = toKeepFromDistance;
+		} else if (toKeepFromDistance < shortestDiff && !level2) {
 			closest = distance;
 			closestDirection = c;
 			shortestDiff = toKeepFromDistance;
