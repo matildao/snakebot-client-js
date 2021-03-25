@@ -42,6 +42,9 @@ node snake-cli.js
  --gamelink : open GameLink®
 ```
 
+Example for how to run in tournament:
+node snake-cli.js ./snakepit/straight-ahead-bot.js --user winner-winner-chicken-dinner --venue tournament
+
 ## Your first game
 
 *Setting up and running your first game is straight forward.*  
